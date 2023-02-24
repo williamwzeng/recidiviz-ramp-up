@@ -1,18 +1,32 @@
 import Head from 'next/head'
-import Image from 'next/image'
-import { Inter } from '@next/font/google'
 import styles from '@/styles/Home.module.css'
-import IgrBarSeries from 'igniteui-react-charts'
 import {usePapaParse} from 'react-papaparse'
 import { useState, useEffect } from 'react'
-
-
-const inter = Inter({ subsets: ['latin'] })
+import {
+  Chart as ChartJS,
+  CategoryScale,
+  LinearScale,
+  BarElement,
+  Title,
+  Tooltip,
+  Legend,
+} from 'chart.js'
+import {Bar} from 'react-chartjs-2'
 
 export default function Home() {
 
   const Papa = usePapaParse()
-  const [data, setData] = useState<any>()
+  const [data, setData] = useState<any>({datasets: []})
+  const [chartOptions, setChartOptions] = useState({})
+
+  ChartJS.register(
+    CategoryScale,
+    LinearScale,
+    BarElement,
+    Title,
+    Tooltip,
+    Legend
+  )
 
   useEffect(() => {
   fetch('/recidivism_data.csv')
@@ -20,12 +34,38 @@ export default function Home() {
     .then(responseText => {
       Papa.readString(responseText, {
         worker: true,
-        complete: (results) => setData(results)
+        header: true,
+        dynamicTyping: true,
+        complete: (results) => {
+          console.log(results)
+          const edu_levels = results.data.map((item: any, index) => item.Education_Level)
+          const some_hs = edu_levels.filter((item) => item === 'Less than HS diploma').length
+          const hs_diploma = edu_levels.filter(item => item === 'High School Diploma').length
+          const some_college = edu_levels.filter(item => item === 'At least some college').length
+          setData({
+            labels: ['Less than HS diploma', 'High School Diploma', 'At least some college'],
+            datasets: [{
+              label: 'Education Level Counts',
+              data: [some_hs, hs_diploma, some_college],
+              borderColor: "white",
+              backgroundColor: 'rgba(54, 162, 235, 0.8)'
+            }]
+          })
+          setChartOptions({
+            responsive: true,
+            maintainAspectRatio: false,
+            title: {
+              display: true,
+              text: 'Count of prisoners (?) by education level'
+            }
+          })
+        }
       });
     })
 
-  console.log(data)
   }, [])
+
+  console.log(data)
 
   return (
     <>
@@ -38,29 +78,20 @@ export default function Home() {
       <main className={styles.main}>
         <div className={styles.description}>
           <p>
-            Visualizing data from NIJ's Recidivism Challenge
+            Visualizing data from NIJ's Recidivism Challenge:
+            <br />
+            <br />
+            This dataset consists of roughly 26,000 prisonsers who were released from&nbsp;
+            prison between 2013 and 2015 in the State of Georgia. The chart shows the
+            distribution of their educational levels.
           </p>
         </div>
 
-        <div className={styles.center}>
-          <Image
-            className={styles.logo}
-            src="/next.svg"
-            alt="Next.js Logo"
-            width={180}
-            height={37}
-            priority
-          />
-          <div className={styles.thirteen}>
-            <Image
-              src="/thirteen.svg"
-              alt="13"
-              width={40}
-              height={31}
-              priority
-            />
+        {data.datasets.length > 0 ? (
+          <div style={{"width": 1000, "height": 500}}>
+            <Bar options={chartOptions} data={data} />
           </div>
-        </div>
+        ) : null}
       </main>
     </>
   )
