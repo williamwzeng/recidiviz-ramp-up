@@ -1,7 +1,7 @@
-import Head from 'next/head'
-import styles from '@/styles/Home.module.css'
-import {usePapaParse} from 'react-papaparse'
-import { useState, useEffect } from 'react'
+import Head from "next/head";
+import styles from "@/styles/Home.module.css";
+import { usePapaParse } from "react-papaparse";
+import { useState, useEffect } from "react";
 import {
   Chart as ChartJS,
   CategoryScale,
@@ -10,18 +10,17 @@ import {
   Title,
   Tooltip,
   Legend,
-} from 'chart.js'
-import {Bar} from 'react-chartjs-2'
-import { time } from 'console'
+} from "chart.js";
+import { Bar } from "react-chartjs-2";
+import { time } from "console";
 
 export default function Home() {
+  const Papa = usePapaParse();
 
-  const Papa = usePapaParse()
-
-  const [data, setData] = useState<any>({datasets: []})
-  const [data2, setData2] = useState<any>({datasets: []})
-  const [chartOptions, setChartOptions] = useState({})
-  const [chartOptions2, setChartOptions2] = useState({})
+  const [data, setData] = useState<any>({ datasets: [] });
+  const [data2, setData2] = useState<any>({ datasets: [] });
+  const [chartOptions, setChartOptions] = useState({});
+  const [chartOptions2, setChartOptions2] = useState({});
 
   ChartJS.register(
     CategoryScale,
@@ -30,71 +29,101 @@ export default function Home() {
     Title,
     Tooltip,
     Legend
-  )
+  );
 
   useEffect(() => {
-  fetch('/recidivism_data.csv')
-    .then(response => response.text())
-    .then(responseText => {
-      Papa.readString(responseText, {
-        worker: true,
-        header: true,
-        dynamicTyping: true,
-        complete: (results) => {
-          console.log(results)
-          const edu_levels = results.data.map((item: any, index) => item.Education_Level)
-          const some_hs = edu_levels.filter((item) => item === 'Less than HS diploma').length
-          const hs_diploma = edu_levels.filter(item => item === 'High School Diploma').length
-          const some_college = edu_levels.filter(item => item === 'At least some college').length
-          const time_spent = results.data.map((item: any, index) => item.Prison_Years)
-          const lessthan1 = time_spent.filter((item)=> item === 'Less than 1 year').length
-          const OnetoTwo = time_spent.filter((item)=> item === '1-2 years').length
-          const G23Y = time_spent.filter((item)=> item === 'Greater than 2 to 3 years').length
-          const O3 = time_spent.filter((item)=> item === 'More than 3 years').length
-          setData({
-            labels: ['Less than HS diploma', 'High School Diploma', 'At least some college'],
-            datasets: [{
-              label: 'Education Level Counts',
-              data: [some_hs, hs_diploma, some_college],
-              borderColor: "rgb(54, 162, 235)",
-              backgroundColor: 'rgba(54, 162, 235, 0.4)',
-              borderWidth:2
-            }]
-          })
-          setData2({
-            labels: ['Less than one year', '1-2 Years','Greater than 2-3 Years','More than 3'],
-            datasets: [{
-              label: 'Time spent in Prison',
-              data: [lessthan1,OnetoTwo,G23Y,O3],
-              borderColor: "rgba(75, 192, 192)",
-              backgroundColor: 'rgba(75, 192, 192, 0.4)',
-              borderWidth:2
-            }]
-          })
-          setChartOptions({
-            responsive: true,
-            maintainAspectRatio: false,
-            title: {
-              display: true,
-              text: 'Count of prisoners (?) by education level'
-            }
-          })
-          setChartOptions2({
-            responsive: true,
-            maintainAspectRatio: false,
-            title: {
-              display: true,
-              text: 'Count of Prisoner spending different amounts of time'
-            }
-          })
-        }
+    fetch("/recidivism_data.csv")
+      .then((response) => response.text())
+      .then((responseText) => {
+        Papa.readString(responseText, {
+          worker: true,
+          header: true,
+          dynamicTyping: true,
+          complete: (results) => {
+            console.log(results);
+            const edu_levels = results.data.map(
+              (item: any, index) => item.Education_Level
+            );
+            const some_hs = edu_levels.filter(
+              (item) => item === "Less than HS diploma"
+            ).length;
+            const hs_diploma = edu_levels.filter(
+              (item) => item === "High School Diploma"
+            ).length;
+            const some_college = edu_levels.filter(
+              (item) => item === "At least some college"
+            ).length;
+            const time_spent = results.data.map(
+              (item: any, index) => item.Prison_Years
+            );
+            const lessthan1 = time_spent.filter(
+              (item) => item === "Less than 1 year"
+            ).length;
+            const OnetoTwo = time_spent.filter(
+              (item) => item === "1-2 years"
+            ).length;
+            const G23Y = time_spent.filter(
+              (item) => item === "Greater than 2 to 3 years"
+            ).length;
+            const O3 = time_spent.filter(
+              (item) => item === "More than 3 years"
+            ).length;
+            setData({
+              labels: [
+                "Less than HS diploma",
+                "High School Diploma",
+                "At least some college",
+              ],
+              datasets: [
+                {
+                  label: "Education Level Counts",
+                  data: [some_hs, hs_diploma, some_college],
+                  borderColor: "rgb(54, 162, 235)",
+                  backgroundColor: "rgba(54, 162, 235, 0.4)",
+                  borderWidth: 2,
+                },
+              ],
+            });
+            setData2({
+              labels: [
+                "Less than one year",
+                "1-2 Years",
+                "Greater than 2-3 Years",
+                "More than 3",
+              ],
+              datasets: [
+                {
+                  label: "Time spent in Prison",
+                  data: [lessthan1, OnetoTwo, G23Y, O3],
+                  borderColor: "rgba(75, 192, 192)",
+                  backgroundColor: "rgba(75, 192, 192, 0.4)",
+                  borderWidth: 2,
+                },
+              ],
+            });
+            setChartOptions({
+              responsive: true,
+              maintainAspectRatio: false,
+              title: {
+                display: true,
+                text: "Count of prisoners (?) by education level",
+              },
+            });
+            setChartOptions2({
+              responsive: true,
+              maintainAspectRatio: false,
+              title: {
+                display: true,
+                text: "Count of Prisoner spending different amounts of time",
+              },
+            });
+          },
+        });
       });
-    })
+  }, []);
 
-  }, [])
-
-  console.log(data)
-  console.log(data2)
+  console.log(data);
+  console.log(data2);
 
   return (
     <>
@@ -105,23 +134,25 @@ export default function Home() {
         <link rel="icon" href="/favicon.ico" />
       </Head>
       <main className={styles.main}>
+        <h1 style={{ color: "black", fontFamily: "sans-serif" }}>
+          React + Data Visualization Ramp-Up
+        </h1>
         <div className={styles.description}>
           <p>
             Visualizing data from NIJ's Recidivism Challenge:
             <br />
             <br />
-            This dataset consists of roughly 26,000 prisonsers who were released from&nbsp;
-            prison between 2013 and 2015 in the State of Georgia. The charts show the
-            distribution of their educational levels as well as the time they spent in prison.
+            This dataset consists of roughly 26,000 prisonsers who were released
+            from prison between 2013 and 2015 in the State of Georgia. The
+            charts show the distribution of their educational levels as well as
+            the time they spent in prison.
             <br />
             <br />
           </p>
         </div>
 
         {data.datasets.length > 0 ? (
-          <div style={{"width": 1000, "height": 500}}>
-            <br />
-            <br />
+          <div style={{ width: 1000, height: 500 }}>
             <Bar options={chartOptions} data={data} />
             <br />
             <br />
@@ -131,8 +162,7 @@ export default function Home() {
             <br />
           </div>
         ) : null}
-
       </main>
     </>
-  )
+  );
 }
